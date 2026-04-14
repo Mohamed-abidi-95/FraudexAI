@@ -1,0 +1,269 @@
+<div class="command-center">
+  <!-- Top Navigation Bar -->
+  <div class="top-bar">
+    <div class="top-bar-content">
+      <!-- Left: Logo & Title -->
+      <div class="logo-section">
+        <h1 class="logo-text">🏦 RCC Bank Fraud Center</h1>
+      </div>
+
+      <!-- Middle: Search Bar -->
+      <div class="search-section">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search alerts, users, or transactions..."
+          [(ngModel)]="searchQuery"
+        />
+        <span class="search-icon">🔍</span>
+      </div>
+
+      <!-- Right: Alerts Badge & Forensic Button -->
+      <div class="right-section">
+        <div class="alert-badge">
+          <span class="alert-pulse"></span>
+          <span class="alert-text">{{ alertCount }} Active Alerts</span>
+        </div>
+        <button class="forensic-btn" (click)="openForensicConsole()">
+          ⚡ Forensic Console
+          <span class="pulse-ring"></span>
+        </button>
+        <button class="ai-lab-btn" (click)="openAiLaboratory()">
+          🧠 AI Laboratory
+          <span class="btn-glow"></span>
+        </button>
+        <button class="analyst-btn" (click)="openDataAnalyst()">
+          🔬 Data Analyst
+          <span class="btn-glow"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Content -->
+  <div class="dashboard-main">
+    <!-- Top Row: Stats Cards -->
+    <div class="stats-row">
+      <!-- Alerts Card -->
+      <div class="stat-card">
+        <div class="card-header">
+          <h3 class="card-title">Alerts</h3>
+          <span class="card-status">⚠️</span>
+        </div>
+        <div class="card-value">{{ alertsTotal }}</div>
+        <div class="card-change" [ngClass]="alertsChange > 0 ? 'change-red' : 'change-green'">
+          <span class="change-badge">{{ alertsChange > 0 ? '+' : '' }}{{ alertsChange }}%</span>
+          <span class="change-label">this week</span>
+        </div>
+      </div>
+
+      <!-- False Positives Card -->
+      <div class="stat-card">
+        <div class="card-header">
+          <h3 class="card-title">False Positives</h3>
+          <span class="card-status">✓</span>
+        </div>
+        <div class="card-value">{{ falsePositives }}%</div>
+        <div class="card-change" [ngClass]="falsePositivesChange > 0 ? 'change-red' : 'change-green'">
+          <span class="change-badge">{{ falsePositivesChange > 0 ? '+' : '' }}{{ falsePositivesChange }}%</span>
+          <span class="change-label">improvement</span>
+        </div>
+      </div>
+
+      <!-- Precision Card -->
+      <div class="stat-card">
+        <div class="card-header">
+          <h3 class="card-title">Precision</h3>
+          <span class="card-status">🎯</span>
+        </div>
+        <div class="card-value">{{ precision }}%</div>
+        <div class="card-change change-blue">
+          <span class="change-badge">+{{ precisionChange }}%</span>
+          <span class="change-label">last month</span>
+        </div>
+      </div>
+
+      <!-- Mean Risk Score Card -->
+      <div class="stat-card">
+        <div class="card-header">
+          <h3 class="card-title">Mean Risk Score</h3>
+          <span class="card-status">📊</span>
+        </div>
+        <div class="card-value">{{ meanRiskScore }}%</div>
+        <div class="card-change" [ngClass]="meanRiskScore > 70 ? 'change-amber' : 'change-green'">
+          <span class="change-badge">{{ meanRiskScore > 70 ? '⚠️ Monitor' : '✓ Good' }}</span>
+          <span class="change-label">current level</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Row: World Map & Model Gauges -->
+    <div class="middle-row">
+      <!-- World Map Card -->
+      <div class="world-map-card">
+        <div class="card-header">
+          <h3>Fraud Hotspots - Global View</h3>
+        </div>
+        <div class="map-container">
+          <svg class="world-map" viewBox="0 0 960 600">
+            <!-- Simplified world map background -->
+            <defs>
+              <radialGradient id="pulseGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:#FF0055;stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:#FF0055;stop-opacity:0" />
+              </radialGradient>
+            </defs>
+
+            <!-- Map background -->
+            <rect width="960" height="600" fill="#0a0e27" />
+
+            <!-- Continents with glow -->
+            <g id="continents" opacity="0.3" fill="#1a3a52">
+              <path
+                d="M150,200 L200,180 L220,200 L200,220 Z"
+              /> <!-- North America -->
+              <path d="M250,250 L300,240 L310,270 L280,280 Z" /> <!-- South America -->
+              <path
+                d="M400,150 L450,140 L470,160 L450,180 Z"
+              /> <!-- Europe -->
+              <path d="M500,250 L550,240 L570,270 L540,280 Z" /> <!-- Africa -->
+              <path d="M600,180 L700,160 L720,200 L680,210 Z" /> <!-- Asia -->
+              <path d="M750,300 L810,290 L820,320 L780,330 Z" /> <!-- Australia -->
+            </g>
+
+            <!-- Fraud Hotspot Pulses - Dynamic Real-Time Points -->
+            <ng-container *ngFor="let hotspot of fraudHotspots; let i = index">
+              <!-- Core hotspot circle -->
+              <circle [attr.cx]="hotspot.cx" [attr.cy]="hotspot.cy" r="8" fill="#FF0055" />
+              <!-- Pulsing animation circle -->
+              <circle
+                [attr.cx]="hotspot.cx"
+                [attr.cy]="hotspot.cy"
+                [attr.r]="8 + (hotspot.txnCount * 1.5)"
+                fill="url(#pulseGradient)"
+                class="pulse-point"
+              >
+                <animate
+                  attributeName="r"
+                  [attr.from]="8 + (hotspot.txnCount * 1.5)"
+                  [attr.to]="20 + (hotspot.txnCount * 2.5)"
+                  [attr.dur]="(2 + i * 0.3) + 's'"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="1"
+                  to="0"
+                  [attr.dur]="(2 + i * 0.3) + 's'"
+                  repeatCount="indefinite"
+                />
+              </circle>
+            </ng-container>
+          </svg>
+        </div>
+      </div>
+
+      <!-- AI Model Gauges Card -->
+      <div class="gauges-card">
+        <div class="card-header">
+          <h3>AI Model Performance</h3>
+        </div>
+        <div class="gauges-container">
+          <div *ngFor="let model of modelMetrics" class="gauge-item">
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 120 120">
+                <!-- Background circle -->
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="#1a3a52"
+                  stroke-width="8"
+                />
+                <!-- Progress circle -->
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  [ngStyle]="{ stroke: model.color }"
+                  stroke-width="8"
+                  stroke-dasharray="314.16"
+                  [ngStyle]="{
+                    'stroke-dashoffset': 314.16 - (314.16 * model.value) / 100
+                  }"
+                  class="gauge-progress"
+                />
+                <!-- Center text -->
+                <text
+                  x="60"
+                  y="60"
+                  text-anchor="middle"
+                  dy=".3em"
+                  class="gauge-text"
+                >
+                  {{ model.value }}%
+                </text>
+              </svg>
+            </div>
+            <div class="gauge-label">{{ model.name }}</div>
+            <div class="gauge-vibrate" [ngStyle]="{ color: model.color }">
+              ▮ ▮ ▮
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Live Alerts Feed -->
+    <div class="alerts-feed-section">
+      <div class="section-header">
+        <h2>🔴 Live Alert Feed</h2>
+        <span class="feed-badge">{{ alertsFeed.length }} Active</span>
+      </div>
+
+      <div class="alerts-scroll">
+        <div
+          *ngFor="let alert of alertsFeed"
+          class="alert-row"
+          [ngClass]="'priority-' + alert.priority"
+          [ngClass]="isAlertNew(alert.id) ? 'new-alert-flash' : ''"
+        >
+          <!-- Priority Indicator -->
+          <div class="alert-priority">
+            <span class="priority-dot"></span>
+          </div>
+
+          <!-- Client Report Badge -->
+          <div *ngIf="alert.source === 'client_reported'" class="client-badge">
+            👤 CLIENT
+          </div>
+
+          <!-- Alert Details -->
+          <div class="alert-details">
+            <div class="alert-top">
+              <span class="alert-id">{{ alert.id }}</span>
+              <span class="alert-timestamp">{{ alert.timestamp }}</span>
+            </div>
+            <div class="alert-middle">
+              <span class="user-id">User: {{ alert.userId }}</span>
+              <span class="risk-score">Risk: {{ alert.riskScore }}%</span>
+              <span class="model-source">{{ alert.modelSource }}</span>
+            </div>
+            <div class="alert-description">{{ alert.details }}</div>
+          </div>
+
+          <!-- Deep Dive Button -->
+          <button class="deep-dive-btn" (click)="deepDive(alert)">
+            <span class="btn-glow"></span>
+            🔬 Deep Dive
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <button class="back-button" (click)="goBack()">← Back to Selection</button>
+</div>

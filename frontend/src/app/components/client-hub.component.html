@@ -1,0 +1,278 @@
+<div class="client-hub-container" *ngIf="currentClient">
+  <!-- Header with Greeting and Notification Bell -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <h1 class="greeting">
+        {{ getTimeOfDayFrench() }}, <span class="user-name">{{ currentClient.name }}</span>
+      </h1>
+      <p class="subtitle">Sécurisez vos transactions avec la protection contre la fraude en temps réel</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Notification Bell -->
+      <button class="notification-bell" [title]="activeAlerts + ' alertes actives'">
+        🔔
+        <span class="bell-badge" *ngIf="activeAlerts > 0">{{ activeAlerts }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Top Row: Credit Card & Trust Score (Flexbox) -->
+  <div class="top-row">
+    <!-- Credit Card UI (Glassmorphic) - Carte Principale -->
+    <div class="credit-card-section">
+      <h3 class="section-title">💳 Carte Principale</h3>
+      <div class="card-container">
+        <div class="card">
+          <!-- Card Background Gradient -->
+          <div class="card-gradient"></div>
+
+          <!-- Card Content -->
+          <div class="card-content">
+            <!-- Card Header -->
+            <div class="card-header">
+              <span class="card-type">{{ currentClient.creditCard.cardType }}</span>
+              <span class="card-contactless">💳</span>
+            </div>
+
+            <!-- Chip & Logo -->
+            <div class="card-chip-section">
+              <div class="chip">★★★★</div>
+            </div>
+
+            <!-- Card Number (Masked) - Show first 12 digits masked, last 4 visible -->
+            <div class="card-number">{{ getMaskedCardNumber(currentClient.creditCard.cardNumber) }}</div>
+
+            <!-- Cardholder & Expiry -->
+            <div class="card-footer">
+              <div class="cardholder">
+                <span class="label">TITULAIRE</span>
+                <span class="value">{{ currentClient.creditCard.holderName }}</span>
+              </div>
+              <div class="expiry">
+                <span class="label">EXPIRE</span>
+                <span class="value">{{ currentClient.creditCard.expiry }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Balance Info -->
+        <div class="card-balance">
+          <div class="balance-item">
+            <span class="balance-label">Solde Actuel</span>
+            <span class="balance-amount">{{ currentClient.creditCard.balance | currency }}</span>
+          </div>
+          <div class="balance-divider"></div>
+          <div class="balance-item">
+            <span class="balance-label">Limite de Crédit</span>
+            <span class="balance-amount">{{ currentClient.creditCard.limit | currency }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Score Card (Circular Gauge) - Score de Confiance -->
+    <div class="trust-score-section">
+      <h3 class="section-title">🛡️ Score de Confiance</h3>
+      <div class="trust-score-container">
+        <!-- Circular Gauge -->
+        <div class="score-circle">
+          <svg class="score-svg" viewBox="0 0 200 200">
+            <!-- Background circle -->
+            <circle cx="100" cy="100" r="95" class="score-bg"></circle>
+            <!-- Progress circle -->
+            <circle
+              cx="100"
+              cy="100"
+              r="95"
+              class="score-progress"
+              [style.stroke]="getScoreColor(currentClient.trustScore)"
+              [style.stroke-dasharray]="((currentClient.trustScore / 100) * 596) + ' 596'"
+            ></circle>
+          </svg>
+
+          <!-- Percentage Text with ngStyle -->
+          <div class="score-text">
+            <div class="score-number" [ngStyle]="getTrustScoreStyle(currentClient.trustScore)">
+              {{ currentClient.trustScore }}%
+            </div>
+            <div class="score-status" [ngStyle]="getTrustScoreStyle(currentClient.trustScore)">
+              {{ currentClient.trustScore > 80 ? 'Sécurisé' : (currentClient.trustScore >= 50 ? 'Modéré' : 'Risqué') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Score Details -->
+        <div class="trust-details">
+          <h3>Évaluation de Sécurité</h3>
+          <ul class="trust-indicators">
+            <li class="indicator safe">
+              <span class="dot">✓</span>
+              <span>Surveillance en temps réel active</span>
+            </li>
+            <li class="indicator safe">
+              <span class="dot">✓</span>
+              <span>Modèle de localisation vérifié</span>
+            </li>
+            <li class="indicator warning" *ngIf="suspectTransactions.length > 0">
+              <span class="dot">!</span>
+              <span>{{ suspectTransactions.length }} transactions en attente d'examen</span>
+            </li>
+            <li class="indicator safe" *ngIf="suspectTransactions.length === 0">
+              <span class="dot">✓</span>
+              <span>Aucune activité suspecte détectée</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions List Section -->
+  <section class="transactions-section">
+    <div class="section-header">
+      <h2>Transactions Récentes</h2>
+      <span class="transaction-count">{{ currentClient.recentTransactions.length }} transactions</span>
+    </div>
+
+    <!-- Suspect Transactions (Red) -->
+    <div class="transactions-group" *ngIf="suspectTransactions.length > 0">
+      <h3 class="group-title">⚠️ En Attente d'Examen</h3>
+      <div class="transactions-table">
+        <div class="transaction-row suspect" *ngFor="let transaction of suspectTransactions">
+          <div class="transaction-cell merchant">
+            <div class="merchant-info">
+              <span class="merchant-name">{{ transaction.merchant }}</span>
+              <span class="merchant-location">
+                🌍 {{ transaction.location.city }}, {{ transaction.location.country }}
+              </span>
+            </div>
+          </div>
+
+          <div class="transaction-cell amount">
+            <span class="amount-value" [style.color]="'#FF4D4D'">
+              -{{ transaction.amount | currency }}
+            </span>
+            <span class="transaction-time">{{ transaction.timestamp }}</span>
+          </div>
+
+          <div class="transaction-cell category">
+            <span class="badge">{{ transaction.category }}</span>
+          </div>
+
+          <!-- Action Buttons - Était-ce vous ? -->
+          <div class="transaction-cell actions">
+            <button class="action-btn confirm-btn" (click)="onConfirmTransaction(transaction)">
+              ✓ Oui, c'était moi
+            </button>
+            <button class="action-btn report-btn" (click)="onRejectTransaction(transaction)">
+              🚨 Non, ce n'était pas moi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verified Transactions (Green) -->
+    <div class="transactions-group" *ngIf="verifiedTransactions.length > 0">
+      <h3 class="group-title">✓ Vérifiée</h3>
+      <div class="transactions-table">
+        <div class="transaction-row verified" *ngFor="let transaction of verifiedTransactions">
+          <div class="transaction-cell merchant">
+            <div class="merchant-info">
+              <span class="merchant-name">{{ transaction.merchant }}</span>
+              <span class="merchant-location">
+                🌍 {{ transaction.location.city }}, {{ transaction.location.country }}
+              </span>
+            </div>
+          </div>
+
+          <div class="transaction-cell amount">
+            <span class="amount-value">{{ transaction.amount | currency }}</span>
+            <span class="transaction-time">{{ transaction.timestamp }}</span>
+          </div>
+
+          <div class="transaction-cell category">
+            <span class="badge">{{ transaction.category }}</span>
+          </div>
+
+          <div class="transaction-cell status">
+            <span class="status-badge verified">✓ VÉRIFIÉE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="currentClient.recentTransactions.length === 0">
+      <span>Aucune transaction trouvée</span>
+    </div>
+  </section>
+
+  <!-- Travel Mode Section -->
+  <section class="travel-mode-section">
+    <div class="section-header">
+      <h2>🌍 Mode Voyage</h2>
+      <p class="section-subtitle">Acceptez les pays pour les transactions transparentes en voyage</p>
+    </div>
+
+    <div class="travel-container">
+      <!-- Whitelisted Countries -->
+      <div class="whitelisted-countries">
+        <h3>Lieux Approuvés</h3>
+        <div class="country-flags">
+          <div class="country-flag" *ngFor="let country of currentClient.whitelistedCountries">
+            <span class="flag-emoji">{{ getCountryFlag(country) }}</span>
+            <button
+              class="remove-country-btn"
+              (click)="onRemoveCountryFromWhitelist(country)"
+              [title]="'Supprimer ' + country"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Countries -->
+      <div class="add-countries">
+        <h3>Ajouter une Destination</h3>
+        <div class="add-country-list">
+          <button
+            class="country-add-btn"
+            *ngFor="let country of getAvailableCountriesToAdd()"
+            (click)="onWhitelistCountry(country)"
+          >
+            {{ getCountryFlag(country) }} {{ country }}
+          </button>
+
+          <button class="country-add-btn disabled" *ngIf="getAvailableCountriesToAdd().length === 0">
+            ✓ Tous les pays ajoutés
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Report Submission Feedback -->
+  <section class="report-feedback" *ngIf="reportStatus.message && reportStatus.success">
+    <div class="success-message">
+      <span class="success-icon">✓</span>
+      <div>
+        <h4>Rapport de Fraude Soumis</h4>
+        <p>{{ reportStatus.message }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="report-feedback" *ngIf="reportStatus.error">
+    <div class="error-message">
+      <span class="error-icon">⚠️</span>
+      <div>
+        <h4>Rapport Échoué</h4>
+        <p>{{ reportStatus.error }}</p>
+      </div>
+    </div>
+  </section>
+</div>

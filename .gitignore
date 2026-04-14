@@ -1,0 +1,75 @@
+# ============================================================
+# FraudExia — Gitignore global (Backend + Frontend + ML)
+# ============================================================
+
+# ──── FRONTEND (Angular) ────────────────────────────────────
+frontend/dist/
+frontend/node_modules/
+frontend/.angular/
+frontend/.vscode/
+frontend/.idea/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.DS_Store
+
+# ──── BACKEND (Spring Boot + Maven) ─────────────────────────
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.idea/
+backend/*.iml
+backend/*.iws
+backend/*.ipr
+backend/.vscode/
+backend/bin/
+backend/.gradle/
+
+# ──── ML (Python) ───────────────────────────────────────────
+ml/__pycache__/
+ml/*.pyc
+ml/*.pyo
+ml/*.pyd
+ml/.Python
+ml/env/
+ml/venv/
+ml/.venv/
+ml/.mypy_cache/
+ml/.pytest_cache/
+ml/*.egg-info/
+ml/dist/
+ml/build/
+ml/.ipynb_checkpoints/
+ml/*.pkl
+ml/*.joblib
+ml/.DS_Store
+
+# ──── OS & IDE ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local
+
+# ──── DATA & MODELS ─────────────────────────────────────────
+*.csv
+*.xlsx
+*.json
+models/*.pth
+ml/sentiment_model.pkl
+ml/vectorizer.pkl
+*.db
+*.sqlite
+
+# ──── DOCUMENTATION ────────────────────────────────────────
+*.md.bak
+*.docx
+*.xlsx
+
